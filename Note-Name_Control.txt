@@ -1,0 +1,86 @@
+|-----------------------|-------------------|
+|Button					|btn 				|
+|Check Box				|chk 				|
+|Color Dialog			|cod 				|
+|Combo Box				|cbo 				|
+|Context Menu			|cmnu 				|
+|Control				|ctr				|
+|Crystal Report Dialog	|crv 				|
+|Data					|dat				|
+|Data Grid View			|dgv				|
+|Data Set				|ds 				|
+|Data View				|dvw 				|
+|DataList				|dtl				|
+|Date Time Picker		|dtp 				|
+|Dialog					|dlg				|
+|Directory Entry		|drie 				|
+|Directory Searcher		|dris 				|
+|Domain Up Down			|dud 				|
+|Drop Down List Box		|cbo				|
+|Event Log				|log 				|
+|File System Watcher	|sw 				|
+|Font Dialog			|fd 				|
+|Form					|frm 				|
+|Frame					|fra				|
+|Grid					|grd 				|
+|Grid View				|grd				|
+|Group Box				|grp 				|
+|Help Provider			|hlp 				|
+|Horizontal Scroll Bar	|hsb				|
+|Hyper Link				|hpl				|
+|Image					|img				|
+|Image Button			|ibt				|
+|Image List				|img 				|
+|Label					|lbl 				|
+|Link Button			|lbt				|
+|Link Label				|llbl 				|
+|Linq Data Source		|linq				|
+|List Box				|lst 				|
+|List View				|lstv 				|
+|Main Menu				|mnu 				|
+|Menu					|mnu				|
+|Message Queue			|msq 				|
+|Month Calendar			|mon 				|
+|Notify Icon			|nico 				|
+|Numeric Up Down		|nud 				|
+|Ole Db Command			|oled 				|
+|Ole Db Connection		|olec 				|
+|Ole Db DataAdapter		|olea 				|
+|Open File Dialog		|ofd 				|
+|Option Button			|opt				|
+|Page Setup Dialog		|psd 				|
+|Panel					|pnl				|
+|Performance Counter	|pco 				|
+|Picture Box			|pic 				|
+|Picture Clip			|clp				|
+|Print Dialog			|pd 				|
+|Print Document			|pdoc 				|
+|Print Preview Control	|ppc 				|
+|Print Preview Dialog	|ppd 				|
+|Process				|pro 				|
+|Progress Bar			|prob 				|
+|Radio Button			|rdo 				|
+|Repeater				|rpt				|
+|Report Document		|rpt 				|
+|Rich TextBox			|rtxt 				|
+|Save File Dialog		|sdl 				|
+|Scroll Bar				|sbr 				|
+|Service Controller		|ser 				|
+|Slider					|sld				|
+|Spin					|spn				|
+|Splitter				|spl 				|
+|Sql Data Source		|sql				|
+|Sql Db Connection		|sqlc 				|
+|Sql Db Data Adapter	|sqla 				|
+|SqlDb Command			|sqld 				|
+|Status Bar				|bar 				|
+|Tab Control			|tab 				|
+|Text Box				|txt 				|
+|Timer					|tmr 				|
+|Tool Bar				|tbr 				|
+|Tool Tip				|tip 				|
+|Track Bar				|trk 				|
+|Tree View				|tre 				|
+|Up Down				|upd				|
+|Vertical Scroll Bar	|vsb				|
+|-----------------------|-------------------|
