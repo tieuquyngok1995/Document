@@ -516,3 +516,300 @@ BEGIN
             FROM #TBL_ZVMTCODECV_046
             WHERE テキスト５ = @wv_i_tokyu_meisho
             ORDER BY 管理コード DESC;
+
+            IF (@wv_henkan IS NULL)
+            BEGIN
+                SET @wv_i_yakuwari_kubun_ryakusho = CAST(@wv_i_tokyu_meisho AS VARCHAR(18));
+            END;
+            ELSE
+            BEGIN
+                SET @wv_i_yakuwari_kubun_ryakusho = CAST(@wv_henkan AS VARCHAR(18));
+            END;
+
+            IF (@wv_i_yakuwari_kubun_ryakusho IS NULL)
+            BEGIN
+                SET @wc_message_level = 'W';
+                SET @wv_message = CONCAT('コード値に変換失敗　社員番号：[', @wv_shain_no,
+                    ']　出力項目名：[役割区分略称]　算出に使用した値：[', @wv_i_yakuwari_kubun_ryakusho, ']');
+                EXEC dbo.ZVTTLOG_MAIN
+                        @wv_program_name,
+                        @wc_message_level,
+                        @wv_message;
+            END;
+
+            /*-- 挿入： 職務ｸﾞﾚｰﾄﾞ略称 --*/
+            SELECT
+                @wv_i_tekiyo = QCMTCODED.摘要
+            FROM (
+                SELECT TOP 1
+                    摘要,
+                    適用開始日,
+                    適用終了日
+                FROM #TBL_QCMTCODED
+                WHERE 適用開始日 <= @wd_koka_kijunbi
+                    AND 適用終了日 >= @wd_koka_kijunbi
+                ORDER BY 適用開始日 DESC
+                ) AS QCMTCODED;
+
+            SELECT TOP 1
+                @wv_henkan = 摘要
+            FROM #TBL_ZVMTCODECV_045
+            WHERE 管理コード = @wv_i_tekiyo
+            ORDER BY 管理コード DESC;
+
+            IF (@wv_henkan IS NULL)
+            BEGIN
+                SET @wv_i_shokumu_grade_ryakusho = CAST(@wv_i_tekiyo AS VARCHAR(16));
+            END;
+            ELSE
+            BEGIN
+                SET @wv_i_shokumu_grade_ryakusho = CAST(@wv_henkan AS VARCHAR(16));
+            END;
+
+            IF (@wv_i_shokumu_grade_ryakusho IS NULL)
+            BEGIN
+                SET @wc_message_level = 'W';
+                SET @wv_message = CONCAT('コード値に変換失敗　社員番号：[', @wv_shain_no,
+                    ']　出力項目名：[職務ｸﾞﾚｰﾄﾞ略称]　算出に使用した値：[', @wv_i_shokumu_grade_ryakusho, ']');
+                EXEC dbo.ZVTTLOG_MAIN
+                        @wv_program_name,
+                        @wc_message_level,
+                        @wv_message;
+            END;
+
+            INSERT INTO [ZVTTEKOUKA] (
+                [社員番号],
+                [氏名],
+                [実施年度],
+                [考課基準日],
+                [考課種別],
+                [KAIKAﾌﾟﾛｸﾞﾗﾑ成果素点],
+                [KAIKAﾌﾟﾛｸﾞﾗﾑ共通素点],
+                [一次絶対賞与(成果)評点],
+                [一次相対賞与(成果)評点],
+                [一次行動評点],
+                [一次総合考課評点],
+                [一次賞与考課評点],
+                [二次絶対賞与(成果)評点],
+                [二次相対賞与(成果)評点],
+                [二次行動評点],
+                [二次総合考課評点],
+                [二次賞与考課評点],
+                [特別申請人事総合考課評点],
+                [特別申請賞与考課評点],
+                [調整賞与(成果)評点],
+                [調整行動評点],
+                [人事調整総合考課評点],
+                [人事調整賞与考課評点],
+                [再申請賞与(成果)評点],
+                [再申請行動評点],
+                [再申請総合考課評点],
+                [再申請賞与考課評点],
+                [ﾗﾝｸﾀﾞｳﾝ前賞与(成果)評点],
+                [ﾗﾝｸﾀﾞｳﾝ前行動評点],
+                [ﾗﾝｸﾀﾞｳﾝ前総合考課評点],
+                [ﾗﾝｸﾀﾞｳﾝ前賞与考課評点],
+                [決定賞与(成果)評点],
+                [決定賞与(成果)評定],
+                [決定行動評点],
+                [決定行動評定],
+                [最終決定総合考課評点],
+                [最終決定賞与考課評点],
+                [読替後賞与(成果)評点],
+                [読替後行動評点],
+                [読替後人事総合考課評点],
+                [表示用賞与(成果)評点],
+                [表示用行動評点],
+                [表示用人事総合考課評点],
+                [入社年度],
+                [入社年月日],
+                [中途入社年度],
+                [生年月日],
+                [社員区分略称],
+                [役割区分略称],
+                [職務ｸﾞﾚｰﾄﾞ略称],
+                [現職年数],
+                [標準年齢１],
+                [標準年齢２],
+                [転換発令日],
+                [昇進発令日],
+                [決定ｿﾞｰﾝ],
+                [決定ﾗﾝｸ],
+                [欠勤日数],
+                [休職日数],
+                [育休日数],
+                [介休日数],
+                [特別休業_労通災日数],
+                [欠勤休職日数],
+                [育介休日数],
+                [登録日],
+                [登録時間],
+                [変更日付],
+                [変更時間],
+                [AD社員番号]
+                )
+            VALUES (
+                @wv_i_shain_no,
+                @wv_i_sei_mei,
+                @wv_i_jisshi_nendo,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                @wv_i_kettei_shoyo_seika,
+                0,
+                @wv_i_kettei_kodo,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                @wv_i_shain_kbn_ryakusho,
+                @wv_i_yakuwari_kubun_ryakusho,
+                @wv_i_shokumu_grade_ryakusho,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                @wv_shain_no
+            )
+
+            SET @wi_insert_count += 1;
+
+            FETCH NEXT FROM CUR_MAIN
+                INTO @wv_shain_no,
+                    @wv_sei,
+                    @wv_mei,
+                    @wv_koka_nendo,
+                    @wv_koka_shubetsu,
+                    @wd_koka_kijunbi,
+                    @wv_sogo_hyoka_1,
+                    @wv_sogo_hyoka_2,
+                    @wv_sogo_hyoka_3,
+                    @wv_shokumu_tokyu_code,
+                    @wv_shokuno_tokyu_code,
+                    @wv_yakushoku_code;
+        END;
+
+        /*-- カーソルクローズ --*/
+        CLOSE CUR_MAIN;
+        DEALLOCATE CUR_MAIN;
+
+        /*-- トランザクションコミット --*/
+        COMMIT TRANSACTION;
+
+    END TRY
+    BEGIN CATCH
+        /*-- トランザクションロールバック --*/
+        IF (@@TRANCOUNT > 0)
+        BEGIN
+            ROLLBACK TRANSACTION;
+        END;
+
+        /*-- カーソル解放（エラー時も必須） --*/
+        IF (CURSOR_STATUS('local', 'CUR_MAIN') >= 0)
+        BEGIN
+            CLOSE CUR_MAIN;
+            DEALLOCATE CUR_MAIN;
+        END;
+
+        /*-- エラーログ出力 --*/
+        SET @wc_message_level = 'E';
+        SET @wv_message = CONCAT('処理異常　詳細メッセージ：[', ERROR_MESSAGE(), ']');
+        EXEC dbo.ZVTTLOG_MAIN
+            @wv_program_name,
+            @wc_message_level,
+            @wv_message;
+
+        /*-- 処理終了 --*/
+        RETURN;
+
+    END CATCH;
+
+    /*-- ３．５.出力件数の出力 --*/
+    SET @wc_message_level = 'I';
+    SET @wv_message = CONCAT('出力テーブル名：ZVTTEKOUKA、出力件数：', FORMAT(@wi_insert_count, 'N0'), '件');
+    EXEC dbo.ZVTTLOG_MAIN
+        @wv_program_name,
+        @wc_message_level,
+        @wv_message;
+
+    /*----------------------------------------------------------------------------*
+    * ３．６.一時テーブルの削除
+    *-----------------------------------------------------------------------------*/
+    DROP TABLE #TBL_ZVMTCODECV_014;
+    DROP TABLE #TBL_ZVMTCODECV_015;
+    DROP TABLE #TBL_ZVMTCODECV_042;
+    DROP TABLE #TBL_ZVMTCODECV_044;
+    DROP TABLE #TBL_ZVMTCODECV_045;
+    DROP TABLE #TBL_ZVMTCODECV_046;
+    DROP TABLE #TBL_QCMTCODED;
+    DROP TABLE #TBL_ZVTTEKOUKA;
+
+    /*----------------------------------------------------------------------------*
+    * ４．終了処理
+    *-----------------------------------------------------------------------------*/
+    SET @wc_message_level = 'I';
+    SET @wv_message = '移行データの編集・TBL出力が終了しました';
+    EXEC dbo.ZVTTLOG_MAIN
+        @wv_program_name,
+        @wc_message_level,
+        @wv_message;
+
+END
+GO
+
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS ON
+GO
+
+/*-------------------------------------------------------------------------------------------------
+$Log:  $
+-------------------------------------------------------------------------------------------------*/
