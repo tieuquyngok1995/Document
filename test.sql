@@ -115,3 +115,88 @@ BEGIN
             @wv_message;
         RETURN;
     END;
+
+    /*----------------------------------------------------------------------------*
+    * ３．処理詳細 *
+    *-----------------------------------------------------------------------------*/
+    /*-- ３．１．出力テーブルのデータ削除 --*/
+    DELETE FROM dbo.ZVTTEKOUKA;
+
+    /*-- ３．２．ローカル一時テーブルの作成 --*/
+    SELECT
+        管理コード,
+        摘要
+    INTO #TBL_ZVMTCODECV_014
+    FROM CRO_GET_ZVMTCODECV('10', 'HENKAN0014');
+
+    SELECT
+        管理コード,
+        摘要
+    INTO #TBL_ZVMTCODECV_015
+    FROM CRO_GET_ZVMTCODECV('10', 'HENKAN0015');
+
+    SELECT
+        管理コード,
+        摘要
+    INTO #TBL_ZVMTCODECV_042
+    FROM CRO_GET_ZVMTCODECV('0', 'HENKAN0042');
+
+    SELECT
+        管理コード,
+        テキスト５,
+        摘要
+    INTO #TBL_ZVMTCODECV_044
+    FROM CRO_GET_ZVMTCODECV('10', 'HENKAN0044');
+
+    SELECT
+        管理コード,
+        摘要
+    INTO #TBL_ZVMTCODECV_045
+    FROM CRO_GET_ZVMTCODECV('10', 'HENKAN0045');
+
+    SELECT
+        管理コード,
+        テキスト５,
+        摘要
+    INTO #TBL_ZVMTCODECV_046
+    FROM CRO_GET_ZVMTCODECV('10', 'HENKAN0046');
+
+    SELECT
+        摘要,
+        適用開始日,
+        適用終了日
+    INTO #TBL_QCMTCODED
+    FROM QCMTCODED
+    WHERE 情報キー = 'SJMT092';
+
+    /*-- ３．３．処理のメインとなるテーブルの抽出条件 --*/
+    CREATE TABLE #TBL_ZVTTEKOUKA
+    (
+        [社員番号] VARCHAR(10) NOT NULL,
+        [姓] VARCHAR(30) NULL,
+        [名] VARCHAR(30) NULL,
+        [考課年度] VARCHAR(10) NULL,
+        [考課種別] VARCHAR(10) NULL,
+        [考課基準日] CHAR(10) NULL,
+        [総合評価_1] VARCHAR(10) NULL,
+        [総合評価_2] VARCHAR(10) NULL,
+        [総合評価_3] VARCHAR(10) NULL,
+        [職務等級コード] VARCHAR(10) NULL,
+        [職能等級コード] VARCHAR(10) NULL,
+        [役職コード] VARCHAR(10) NULL
+    );
+
+    INSERT INTO #TBL_ZVTTEKOUKA
+        SELECT
+            SJMTKIHON.社員番号,
+            KJMTKIHON.姓,
+            KJMTKIHON.名,
+            SJTTKOUKAH_1.考課年度,
+            SJTTKOUKAH_1.考課種別,
+            SJTTKOUKAH_1.考課基準日,
+            SJTTKOUKAH_1.総合評価 AS 総合評価_1,
+            SJTTKOUKAH_2.総合評価 AS 総合評価_2,
+            SJTTKOUKAH_3.総合評価 AS 総合評価_3,
+            HRMTSHIKAK.職務等級コード,
+            HRMTSHIKAK.職能等級コード,
+            HRMTYAKUSH.役職コード
