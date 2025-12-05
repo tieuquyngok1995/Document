@@ -363,3 +363,156 @@ BEGIN
     FROM #TBL_ZVTTEKOUKA AS ZVTTEKOUKA;
 
     OPEN CUR_MAIN;
+
+    BEGIN TRANSACTION;
+
+    BEGIN TRY
+        /*-- 次の行フェッチ --*/
+        FETCH NEXT FROM CUR_MAIN
+            INTO @wv_shain_no,
+                @wv_sei,
+                @wv_mei,
+                @wv_koka_nendo,
+                @wv_koka_shubetsu,
+                @wd_koka_kijunbi,
+                @wv_sogo_hyoka_1,
+                @wv_sogo_hyoka_2,
+                @wv_sogo_hyoka_3,
+                @wv_shokumu_tokyu_code,
+                @wv_shokuno_tokyu_code,
+                @wv_yakushoku_code;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+
+            /*-- 挿入： 社員番号 --*/
+            SELECT TOP 1
+                @wv_henkan = 摘要
+            FROM #TBL_ZVMTCODECV_042
+            WHERE 管理コード = @wv_shain_no
+            ORDER BY 管理コード DESC;
+
+            IF (@wv_henkan IS NULL)
+            BEGIN
+                SET @wv_i_shain_no = @wv_shain_no;
+            END;
+            ELSE
+            BEGIN
+                SET @wv_i_shain_no = CAST(@wv_henkan AS VARCHAR(9));
+            END;
+
+            /*-- 挿入： 姓 --*/
+            SELECT TOP 1
+                @wv_henkan = 摘要
+            FROM #TBL_ZVMTCODECV_014
+            WHERE 管理コード = @wv_shain_no
+            ORDER BY 管理コード DESC;
+
+            IF (@wv_henkan IS NULL)
+            BEGIN
+                SET @wv_i_sei = @wv_sei;
+            END;
+            ELSE
+            BEGIN
+                SET @wv_i_sei = CAST(@wv_henkan AS VARCHAR(30));
+            END;
+
+            /*-- 挿入： 名 --*/
+            SELECT TOP 1
+                @wv_henkan = 摘要
+            FROM #TBL_ZVMTCODECV_015
+            WHERE 管理コード = @wv_shain_no
+            ORDER BY 管理コード DESC;
+
+            IF (@wv_henkan IS NULL)
+            BEGIN
+                SET @wv_i_mei = @wv_mei;
+            END;
+            ELSE
+            BEGIN
+                SET @wv_i_mei = CAST(@wv_henkan AS VARCHAR(30));
+            END;
+
+            /*-- 挿入： 氏名 --*/
+            IF (DATALENGTH(@wv_i_sei + @wv_i_mei) > 20)
+            BEGIN
+                SET @wv_i_sei_mei = CONCAT(@wv_i_sei, @wv_i_mei);
+            END;
+            ELSE
+            BEGIN
+                SET @wv_i_sei_mei = CONCAT(@wv_i_sei, '　', @wv_i_mei);
+            END;
+
+            /*-- 挿入： 実施年度 --*/
+            SET @wv_i_jisshi_nendo = LEFT(@wv_koka_nendo, 4);
+
+            /*-- 挿入： 決定賞与(成果)評定 --*/
+            SET @wv_i_kettei_shoyo_seika = CAST(@wv_sogo_hyoka_2 AS VARCHAR(3));
+            IF (@wv_i_kettei_shoyo_seika IS NULL)
+            BEGIN
+                SET @wv_i_kettei_shoyo_seika = CAST(@wv_sogo_hyoka_3 AS VARCHAR(3));
+            END;
+
+            IF (@wv_i_kettei_shoyo_seika IS NULL)
+            BEGIN
+                SET @wc_message_level = 'W';
+                SET @wv_message = CONCAT('コード値に変換失敗　社員番号：[', @wv_shain_no,
+                    ']　出力項目名：決定賞与(成果)評定　算出に使用した値：[', @wv_sogo_hyoka_2, ',', @wv_sogo_hyoka_3, ']');
+                EXEC dbo.ZVTTLOG_MAIN
+                        @wv_program_name,
+                        @wc_message_level,
+                        @wv_message;
+            END;
+
+            /*-- 挿入： 決定行動評定 --*/
+            SET @wv_i_kettei_kodo = CAST(@wv_sogo_hyoka_1 AS VARCHAR(3));
+
+            /*-- 挿入： 社員区分略称 --*/
+            SELECT TOP 1
+                @wv_i_tokyu_meisho = 等級名称
+            FROM [SJMTTOKYU]
+            WHERE 等級コード = @wv_shokumu_tokyu_code
+                AND 適用開始日 <= @wd_koka_kijunbi
+                AND 適用終了日 >= @wd_koka_kijunbi
+            ORDER BY 適用開始日 DESC;
+
+            SELECT TOP 1
+                @wv_henkan = 摘要
+            FROM #TBL_ZVMTCODECV_044
+            WHERE テキスト５ = @wv_i_tokyu_meisho
+            ORDER BY 管理コード DESC;
+
+            IF (@wv_henkan IS NULL)
+            BEGIN
+                SET @wv_i_shain_kbn_ryakusho = CAST(@wv_i_tokyu_meisho AS VARCHAR(18));
+            END;
+            ELSE
+            BEGIN
+                SET @wv_i_shain_kbn_ryakusho = CAST(@wv_henkan AS VARCHAR(18));
+            END;
+
+            IF (@wv_i_shain_kbn_ryakusho IS NULL)
+            BEGIN
+                SET @wc_message_level = 'W';
+                SET @wv_message = CONCAT('コード値に変換失敗　社員番号：[', @wv_shain_no,
+                    ']　出力項目名：[社員区分略称]　算出に使用した値：[', @wv_i_shain_kbn_ryakusho, ']');
+                EXEC dbo.ZVTTLOG_MAIN
+                        @wv_program_name,
+                        @wc_message_level,
+                        @wv_message;
+            END;
+
+            /*-- 挿入： 役割区分略称 --*/
+            SELECT TOP 1
+                @wv_i_tokyu_meisho = 等級名称
+            FROM [SJMTTOKYU]
+            WHERE 等級コード = @wv_shokuno_tokyu_code
+                AND 適用開始日 <= @wd_koka_kijunbi
+                AND 適用終了日 >= @wd_koka_kijunbi
+            ORDER BY 適用開始日 DESC;
+
+            SELECT TOP 1
+                @wv_henkan = 摘要
+            FROM #TBL_ZVMTCODECV_046
+            WHERE テキスト５ = @wv_i_tokyu_meisho
+            ORDER BY 管理コード DESC;
