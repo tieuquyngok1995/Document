@@ -200,3 +200,166 @@ BEGIN
             HRMTSHIKAK.職務等級コード,
             HRMTSHIKAK.職能等級コード,
             HRMTYAKUSH.役職コード
+        FROM SJMTKIHON AS SJMTKIHON -- 考課種別='1'が存在する
+            INNER JOIN KJMTKIHON AS KJMTKIHON
+                ON KJMTKIHON.個人識別ＩＤ = SJMTKIHON.個人識別ＩＤ
+                AND KJMTKIHON.適用開始日 <= @wv_ikou_kijunbi
+                AND KJMTKIHON.適用終了日 >= @wv_ikou_kijunbi
+            INNER JOIN SJTTKOUKAH  AS SJTTKOUKAH_1 -- ※考課種別='1'を取得
+                ON SJTTKOUKAH_1.会社コード = SJMTKIHON.会社コード
+                AND SJTTKOUKAH_1.社員番号 = SJMTKIHON.社員番号
+                AND SJTTKOUKAH_1.考課種別 = '1'
+            LEFT JOIN SJTTKOUKAH AS SJTTKOUKAH_2 -- ※考課種別='2'を取得
+                ON SJTTKOUKAH_2.会社コード = SJTTKOUKAH_1.会社コード
+                AND SJTTKOUKAH_2.社員番号 = SJTTKOUKAH_1.社員番号
+                AND SJTTKOUKAH_2.考課年度 = SJTTKOUKAH_1.考課年度
+                AND SJTTKOUKAH_2.考課種別 = '2'
+            LEFT JOIN SJTTKOUKAH AS SJTTKOUKAH_3 -- ※考課種別='3'を取得
+                ON SJTTKOUKAH_3.会社コード = SJTTKOUKAH_1.会社コード
+                AND SJTTKOUKAH_3.社員番号 = SJTTKOUKAH_1.社員番号
+                AND SJTTKOUKAH_3.考課年度 = SJTTKOUKAH_1.考課年度
+                AND SJTTKOUKAH_3.考課種別 = '3'
+            INNER JOIN HRMTSHIKAK AS HRMTSHIKAK
+                ON HRMTSHIKAK.会社コード = SJMTKIHON.会社コード
+                AND HRMTSHIKAK.社員番号 = SJMTKIHON.社員番号
+                AND HRMTSHIKAK.マスタ更新区分 = '1'
+                AND HRMTSHIKAK.履歴有効区分 = '1'
+                AND SJTTKOUKAH_1.考課基準日 BETWEEN HRMTSHIKAK.適用開始日 AND HRMTSHIKAK.適用終了日
+            INNER JOIN HRMTYAKUSH AS HRMTYAKUSH
+                ON HRMTYAKUSH.会社コード = SJMTKIHON.会社コード
+                AND HRMTYAKUSH.社員番号 = SJMTKIHON.社員番号
+                AND HRMTYAKUSH.マスタ更新区分 = '1'
+                AND HRMTYAKUSH.履歴有効区分 = '1'
+                AND SJTTKOUKAH_1.考課基準日 BETWEEN HRMTYAKUSH.適用開始日 AND HRMTYAKUSH.適用終了日
+        WHERE SJMTKIHON.会社コード = '11'
+            AND SJMTKIHON.適用開始日 <= @wv_ikou_kijunbi
+            AND SJMTKIHON.適用終了日 >= @wv_ikou_kijunbi
+            AND SJMTKIHON.在籍区分 IN ('1','8','9')
+            AND SJTTKOUKAH_1.考課種別 = '1'
+            AND SJTTKOUKAH_2.社員番号 IS NULL -- TODO:QA
+            AND SJTTKOUKAH_3.社員番号 IS NULL
+    UNION ALL
+        -- 考課種別='2'が存在して、考課種別='1'、'3'が存在しない
+        SELECT
+            SJMTKIHON.社員番号,
+            KJMTKIHON.姓,
+            KJMTKIHON.名,
+            SJTTKOUKAH_1.考課年度,
+            SJTTKOUKAH_1.考課種別,
+            SJTTKOUKAH_1.考課基準日,
+            SJTTKOUKAH_1.総合評価 AS 総合評価_1,
+            SJTTKOUKAH_2.総合評価 AS 総合評価_2,
+            SJTTKOUKAH_3.総合評価 AS 総合評価_3,
+            HRMTSHIKAK.職務等級コード,
+            HRMTSHIKAK.職能等級コード,
+            HRMTYAKUSH.役職コード
+        FROM SJMTKIHON AS SJMTKIHON
+            INNER JOIN KJMTKIHON AS KJMTKIHON
+                ON KJMTKIHON.個人識別ＩＤ = SJMTKIHON.個人識別ＩＤ
+                AND KJMTKIHON.適用開始日 <= @wv_ikou_kijunbi
+                AND KJMTKIHON.適用終了日 >= @wv_ikou_kijunbi
+            INNER JOIN SJTTKOUKAH  AS SJTTKOUKAH_1 -- ※考課種別='2'を取得
+                ON SJTTKOUKAH_1.会社コード = SJMTKIHON.会社コード
+                AND SJTTKOUKAH_1.社員番号 = SJMTKIHON.社員番号
+                AND SJTTKOUKAH_1.考課種別 = '2'
+            LEFT JOIN SJTTKOUKAH AS SJTTKOUKAH_2 -- ※考課種別='1'を取得
+                ON SJTTKOUKAH_2.会社コード = SJTTKOUKAH_1.会社コード
+                AND SJTTKOUKAH_2.社員番号 = SJTTKOUKAH_1.社員番号
+                AND SJTTKOUKAH_2.考課年度 = SJTTKOUKAH_1.考課年度
+                AND SJTTKOUKAH_2.考課種別 = '1'
+            LEFT JOIN SJTTKOUKAH AS SJTTKOUKAH_3 -- ※考課種別='3'を取得
+                ON SJTTKOUKAH_3.会社コード = SJTTKOUKAH_1.会社コード
+                AND SJTTKOUKAH_3.社員番号 = SJTTKOUKAH_1.社員番号
+                AND SJTTKOUKAH_3.考課年度 = SJTTKOUKAH_1.考課年度
+                AND SJTTKOUKAH_3.考課種別 = '3'
+            INNER JOIN HRMTSHIKAK AS HRMTSHIKAK
+                ON HRMTSHIKAK.会社コード = SJMTKIHON.会社コード
+                AND HRMTSHIKAK.社員番号 = SJMTKIHON.社員番号
+                AND HRMTSHIKAK.マスタ更新区分 = '1'
+                AND HRMTSHIKAK.履歴有効区分 = '1'
+                AND SJTTKOUKAH_1.考課基準日 BETWEEN HRMTSHIKAK.適用開始日 AND HRMTSHIKAK.適用終了日
+            INNER JOIN HRMTYAKUSH AS HRMTYAKUSH
+                ON HRMTYAKUSH.会社コード = SJMTKIHON.会社コード
+                AND HRMTYAKUSH.社員番号 = SJMTKIHON.社員番号
+                AND HRMTYAKUSH.マスタ更新区分 = '1'
+                AND HRMTYAKUSH.履歴有効区分 = '1'
+                AND SJTTKOUKAH_1.考課基準日 BETWEEN HRMTYAKUSH.適用開始日 AND HRMTYAKUSH.適用終了日
+        WHERE SJMTKIHON.会社コード = '11'
+            AND SJMTKIHON.適用開始日 <= @wv_ikou_kijunbi
+            AND SJMTKIHON.適用終了日 >= @wv_ikou_kijunbi
+            AND SJMTKIHON.在籍区分 IN ('1','8','9')
+            AND SJTTKOUKAH_1.考課種別 = '2'
+            AND SJTTKOUKAH_2.社員番号 IS NULL -- TODO:QA
+            AND SJTTKOUKAH_3.社員番号 IS NOT NULL
+    UNION ALL
+        -- 考課種別='3'が存在して、考課種別='1'、'2'が存在しない
+        SELECT
+            SJMTKIHON.社員番号,
+            KJMTKIHON.姓,
+            KJMTKIHON.名,
+            SJTTKOUKAH_1.考課年度,
+            SJTTKOUKAH_1.考課種別,
+            SJTTKOUKAH_1.考課基準日,
+            SJTTKOUKAH_1.総合評価 AS 総合評価_1,
+            SJTTKOUKAH_2.総合評価 AS 総合評価_2,
+            SJTTKOUKAH_3.総合評価 AS 総合評価_3,
+            HRMTSHIKAK.職務等級コード,
+            HRMTSHIKAK.職能等級コード,
+            HRMTYAKUSH.役職コード
+        FROM SJMTKIHON AS SJMTKIHON
+            INNER JOIN KJMTKIHON AS KJMTKIHON
+                ON KJMTKIHON.個人識別ＩＤ = SJMTKIHON.個人識別ＩＤ
+                AND KJMTKIHON.適用開始日 <= @wv_ikou_kijunbi
+                AND KJMTKIHON.適用終了日 >= @wv_ikou_kijunbi
+            INNER JOIN SJTTKOUKAH  AS SJTTKOUKAH_1 -- ※考課種別='3'を取得
+                ON SJTTKOUKAH_1.会社コード = SJMTKIHON.会社コード
+                AND SJTTKOUKAH_1.社員番号 = SJMTKIHON.社員番号
+                AND SJTTKOUKAH_1.考課種別 = '3'
+            LEFT JOIN SJTTKOUKAH AS SJTTKOUKAH_2 -- ※考課種別='1'を取得
+                ON SJTTKOUKAH_2.会社コード = SJTTKOUKAH_1.会社コード
+                AND SJTTKOUKAH_2.社員番号 = SJTTKOUKAH_1.社員番号
+                AND SJTTKOUKAH_2.考課年度 = SJTTKOUKAH_1.考課年度
+                AND SJTTKOUKAH_2.考課種別 = '1'
+            LEFT JOIN SJTTKOUKAH AS SJTTKOUKAH_3 -- ※考課種別='2'を取得
+                ON SJTTKOUKAH_3.会社コード = SJTTKOUKAH_1.会社コード
+                AND SJTTKOUKAH_3.社員番号 = SJTTKOUKAH_1.社員番号
+                AND SJTTKOUKAH_3.考課年度 = SJTTKOUKAH_1.考課年度
+                AND SJTTKOUKAH_3.考課種別 = '2'
+            INNER JOIN HRMTSHIKAK AS HRMTSHIKAK
+                ON HRMTSHIKAK.会社コード = SJMTKIHON.会社コード
+                AND HRMTSHIKAK.社員番号 = SJMTKIHON.社員番号
+                AND HRMTSHIKAK.マスタ更新区分 = '1'
+                AND HRMTSHIKAK.履歴有効区分 = '1'
+                AND SJTTKOUKAH_1.考課基準日 BETWEEN HRMTSHIKAK.適用開始日 AND HRMTSHIKAK.適用終了日
+            INNER JOIN HRMTYAKUSH AS HRMTYAKUSH
+                ON HRMTYAKUSH.会社コード = SJMTKIHON.会社コード
+                AND HRMTYAKUSH.社員番号 = SJMTKIHON.社員番号
+                AND HRMTYAKUSH.マスタ更新区分 = '1'
+                AND HRMTYAKUSH.履歴有効区分 = '1'
+                AND SJTTKOUKAH_1.考課基準日 BETWEEN HRMTYAKUSH.適用開始日 AND HRMTYAKUSH.適用終了日
+        WHERE SJMTKIHON.会社コード = '11'
+            AND SJMTKIHON.適用開始日 <= @wv_ikou_kijunbi
+            AND SJMTKIHON.適用終了日 >= @wv_ikou_kijunbi
+            AND SJMTKIHON.在籍区分 IN ('1','8','9')
+            AND SJTTKOUKAH_1.考課種別 = '3'
+            AND SJTTKOUKAH_2.社員番号 IS NULL -- TODO:QA
+            AND SJTTKOUKAH_3.社員番号 IS NOT NULL;
+
+    /*-- ３．４．各項目の編集 --*/
+    DECLARE CUR_MAIN CURSOR LOCAL FAST_FORWARD FOR
+    SELECT
+        社員番号,
+        姓,
+        名,
+        考課年度,
+        考課種別,
+        考課基準日,
+        総合評価_1,
+        総合評価_2,
+        総合評価_3,
+        職務等級コード,
+        職能等級コード,
+        役職コード
+    FROM #TBL_ZVTTEKOUKA AS ZVTTEKOUKA;
+
+    OPEN CUR_MAIN;
